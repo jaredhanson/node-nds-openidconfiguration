@@ -46,4 +46,32 @@ describe('resolve', function() {
     });
   });
   
+  describe('handling not found status', function() {
+    // ** MOCKS **
+    var request = function(options, cb) {
+      expect(options.url).to.equal('https://server.example.com/.well-known/openid-configuration');
+        
+      process.nextTick(function() {
+        return cb(null, { statusCode: 404 }, 'Cannot GET /.well-known/openid-configuration');
+      });
+    };
+    
+    
+    var setup = $require(MODULE_PATH, { request: request });
+    var resolve = setup();
+    var provider;
+    
+    before(function(done) {
+      resolve('https://server.example.com', function(err, p) {
+        if (err) { return done(err); }
+        provider = p;
+        done();
+      });
+    });
+    
+    it('should not resolve metadata', function() {
+      expect(provider).to.be.undefined;
+    });
+  });
+  
 });
