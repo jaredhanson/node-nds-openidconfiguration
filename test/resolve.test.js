@@ -142,4 +142,85 @@ describe('resolve', function() {
     });
   });
   
+  describe('resolving an ID that is not a URL', function() {
+    var provider;
+    
+    before(function(done) {
+      resolve()('1234', function(err, p) {
+        if (err) { return done(err); }
+        provider = p;
+        done();
+      });
+    });
+    
+    it('should not resolve metadata', function() {
+      expect(provider).to.be.undefined;
+    });
+  });
+  
+  describe('resolving an ID that is an unsupported URL', function() {
+    var provider;
+    
+    before(function(done) {
+      resolve()('ftp://server.example.com', function(err, p) {
+        if (err) { return done(err); }
+        provider = p;
+        done();
+      });
+    });
+    
+    it('should not resolve metadata', function() {
+      expect(provider).to.be.undefined;
+    });
+  });
+  
+  describe('resolving an ID that cannot be resolved securely', function() {
+    var provider;
+    
+    before(function(done) {
+      resolve()('http://server.example.com', function(err, p) {
+        if (err) { return done(err); }
+        provider = p;
+        done();
+      });
+    });
+    
+    it('should not resolve metadata', function() {
+      expect(provider).to.be.undefined;
+    });
+  });
+  
+  describe('resolving metadata with secure resolution disabled', function() {
+    // ** MOCKS **
+    var request = function(options, cb) {
+      expect(options.url).to.equal('http://server.example.com/.well-known/openid-configuration');
+      expect(options.headers['Accept']).to.equal('application/json');
+        
+      process.nextTick(function() {
+        // http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse
+        var keys = fs.readFileSync(path.resolve(__dirname, 'data/configuration-draft21.json'), 'utf8');
+        return cb(null, { statusCode: 200 }, keys);
+      });
+    };
+    
+    
+    var setup = $require(MODULE_PATH, { request: request });
+    var resolve = setup({ secure: false });
+    var provider;
+    
+    before(function(done) {
+      resolve('http://server.example.com', function(err, p) {
+        if (err) { return done(err); }
+        provider = p;
+        done();
+      });
+    });
+    
+    it('should resolve metadata', function() {
+      expect(provider).to.be.an('object');
+      expect(provider.id).to.equal('https://server.example.com');
+      expect(provider.issuer).to.equal('https://server.example.com');
+    });
+  });
+  
 });
