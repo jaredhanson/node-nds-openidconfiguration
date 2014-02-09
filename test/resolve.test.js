@@ -42,7 +42,10 @@ describe('resolve', function() {
       expect(provider).to.be.an('object');
       expect(provider.id).to.equal('https://server.example.com');
       expect(provider.issuer).to.equal('https://server.example.com');
+      expect(provider.authorizationUrl).to.equal('https://server.example.com/connect/authorize');
+      expect(provider.userInfoUrl).to.equal('https://server.example.com/connect/userinfo');
       expect(provider.jwksUrl).to.equal('https://server.example.com/jwks.json');
+      expect(provider.registrationUrl).to.equal('https://server.example.com/connect/register');
     });
   });
   
