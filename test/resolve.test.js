@@ -20,8 +20,8 @@ describe('resolve', function() {
         
       process.nextTick(function() {
         // http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse
-        var keys = fs.readFileSync(path.resolve(__dirname, 'data/configuration-draft21.json'), 'utf8');
-        return cb(null, { statusCode: 200 }, keys);
+        var meta = fs.readFileSync(path.resolve(__dirname, 'data/configuration-draft21.json'), 'utf8');
+        return cb(null, { statusCode: 200 }, meta);
       });
     };
     
@@ -43,6 +43,72 @@ describe('resolve', function() {
       expect(provider.id).to.equal('https://server.example.com');
       expect(provider.issuer).to.equal('https://server.example.com');
       expect(provider.jwksUrl).to.equal('https://server.example.com/jwks.json');
+    });
+  });
+  
+  describe('resolving metadata from issuer with path', function() {
+    // ** MOCKS **
+    var request = function(options, cb) {
+      expect(options.url).to.equal('https://server.example.com/issuer1/.well-known/openid-configuration');
+      expect(options.headers['Accept']).to.equal('application/json');
+        
+      process.nextTick(function() {
+        // http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse
+        var meta = fs.readFileSync(path.resolve(__dirname, 'data/issuer-with-path.json'), 'utf8');
+        return cb(null, { statusCode: 200 }, meta);
+      });
+    };
+    
+    
+    var setup = $require(MODULE_PATH, { request: request });
+    var resolve = setup();
+    var provider;
+    
+    before(function(done) {
+      resolve('https://server.example.com/issuer1', function(err, p) {
+        if (err) { return done(err); }
+        provider = p;
+        done();
+      });
+    });
+    
+    it('should resolve metadata', function() {
+      expect(provider).to.be.an('object');
+      expect(provider.id).to.equal('https://server.example.com/issuer1');
+      expect(provider.issuer).to.equal('https://server.example.com/issuer1');
+    });
+  });
+  
+  describe('resolving metadata from issuer with path that has trailing slash', function() {
+    // ** MOCKS **
+    var request = function(options, cb) {
+      expect(options.url).to.equal('https://server.example.com/issuer1/.well-known/openid-configuration');
+      expect(options.headers['Accept']).to.equal('application/json');
+        
+      process.nextTick(function() {
+        // http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse
+        var meta = fs.readFileSync(path.resolve(__dirname, 'data/issuer-with-path-slash.json'), 'utf8');
+        return cb(null, { statusCode: 200 }, meta);
+      });
+    };
+    
+    
+    var setup = $require(MODULE_PATH, { request: request });
+    var resolve = setup();
+    var provider;
+    
+    before(function(done) {
+      resolve('https://server.example.com/issuer1/', function(err, p) {
+        if (err) { return done(err); }
+        provider = p;
+        done();
+      });
+    });
+    
+    it('should resolve metadata', function() {
+      expect(provider).to.be.an('object');
+      expect(provider.id).to.equal('https://server.example.com/issuer1/');
+      expect(provider.issuer).to.equal('https://server.example.com/issuer1/');
     });
   });
   
