@@ -264,7 +264,7 @@ describe('resolve', function() {
         
       process.nextTick(function() {
         // http://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationResponse
-        var keys = fs.readFileSync(path.resolve(__dirname, 'data/configuration-draft21.json'), 'utf8');
+        var keys = fs.readFileSync(path.resolve(__dirname, 'data/issuer-http.json'), 'utf8');
         return cb(null, { statusCode: 200 }, keys);
       });
     };
@@ -284,8 +284,8 @@ describe('resolve', function() {
     
     it('should resolve metadata', function() {
       expect(provider).to.be.an('object');
-      expect(provider.id).to.equal('https://server.example.com');
-      expect(provider.issuer).to.equal('https://server.example.com');
+      expect(provider.id).to.equal('http://server.example.com');
+      expect(provider.issuer).to.equal('http://server.example.com');
     });
   });
   

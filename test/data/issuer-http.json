@@ -1,0 +1,8 @@
+{
+"issuer":
+ "http://server.example.com",
+"authorization_endpoint":
+ "http://server.example.com/connect/authorize",
+"token_endpoint":
+ "http://server.example.com/connect/token"
+}
